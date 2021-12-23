@@ -14,11 +14,11 @@ struct TripleStackGallery: View {
     @State var lastOffset: CGSize = .init(width: 20, height: 20)
     // MARK: - Opacities
     @State var currentOpacity: Double = 1.0
-    @State var lastOpacity: Double = 1.0
     // MARK: Displayed views
-    @State var current: Color
-    @State var next: Color
-    @State var last: Color
+    @State var current: Color = .clear
+    @State var next: Color = .clear
+    @State var last: Color = .clear
+    @State var nextPage: Color = .clear
     
     var colors: [Color]
     
@@ -26,47 +26,73 @@ struct TripleStackGallery: View {
     
     init(_ colors: [Color]) {
         self.colors = colors
-        current = colors[0]
-        next = colors[1]
-        last = colors[2]
     }
     
     var body: some View {
-        ZStack {
-            last
-                .aspectRatio(1.0, contentMode: .fill)
-                .offset(lastOffset)
-                .opacity(lastOpacity)
-            next
-                .aspectRatio(1.0, contentMode: .fill)
-                .offset(nextOffset)
-            current
-                .aspectRatio(1.0, contentMode: .fill)
-                .offset(currentOffset)
-                .opacity(currentOpacity)
-                .gesture(DragGesture()
-                            .onChanged({ dragValue in
-                    if isValidGesture(width: dragValue.translation.width) {
-                        currentOffset = .init(width: dragValue.translation.width, height: -20)
-                    }
-                })
-                            .onEnded({ endValue in
-                    if shouldProgress(endValue.translation.width) {
-                        withAnimation(.easeInOut(duration: duration)) {
-                            self.currentOpacity = 0.0
-                            currentOffset = .init(width: -20, height: -20)
-                            nextOffset = .init(width: -20, height: -20)
-                            lastOffset = .zero
+        VStack {
+            ZStack {
+                nextPage
+                    .aspectRatio(1.0, contentMode: .fill)
+                    .offset(.init(width: 20, height: 20))
+                last
+                    .aspectRatio(1.0, contentMode: .fill)
+                    .offset(lastOffset)
+                next
+                    .aspectRatio(1.0, contentMode: .fill)
+                    .offset(nextOffset)
+                current
+                    .aspectRatio(1.0, contentMode: .fill)
+                    .offset(currentOffset)
+                    .opacity(currentOpacity)
+                    .onAppear(perform: {
+                        initalSetup()
+                    })
+                    .gesture(DragGesture()
+                                .onChanged({ dragValue in
+                        if isValidGesture(width: dragValue.translation.width) {
+                            currentOffset = .init(width: dragValue.translation.width, height: -20)
                         }
-                        DispatchQueue.main.asyncAfter(deadline: .now() + duration) {
-                            updateColors()
+                    })
+                                .onEnded({ endValue in
+                        if shouldProgress(endValue.translation.width) {
+                            withAnimation(.easeInOut(duration: duration)) {
+                                self.currentOpacity = 0.0
+                                currentOffset = .init(width: -20, height: -20)
+                                nextOffset = .init(width: -20, height: -20)
+                                lastOffset = .zero
+                            }
+                            DispatchQueue.main.asyncAfter(deadline: .now() + duration) {
+                                updateColors()
+                                currentOpacity = 1.0
+                                currentOffset = .init(width: -20, height: -20)
+                                nextOffset = .zero
+                                lastOffset = .init(width: 20, height: 20)
+                            }
+                        } else {
+                            withAnimation(.easeInOut) {
+                                currentOffset = .init(width: -20, height: -20)
+                            }
                         }
-                    } else {
-                        withAnimation(.spring()) {
-                            currentOffset = .init(width: -20, height: -20)
-                        }
-                    }
-                }))
+                    }))
+            }.padding(20)
+        }
+    }
+    
+    func initalSetup() {
+        self.current = self.colors[0]
+        self.next = nextColor(indexColor: current)
+        self.last = nextColor(indexColor: next)
+        self.nextPage = nextColor(indexColor: last)
+    }
+    
+    func nextColor(indexColor: Color) -> Color {
+        guard let index = colors.firstIndex(of: indexColor) else {
+            return .clear
+        }
+        if index + 1 == colors.count {
+            return colors[0]
+        } else {
+            return colors[index+1]
         }
     }
     
@@ -81,18 +107,11 @@ struct TripleStackGallery: View {
     func updateColors() {
         current = next
         next = last
-        if last == colors.last {
-            last = colors[0]
+        last = nextPage
+        if nextPage == colors.last {
+            nextPage = colors[0]
         } else {
-            last = colors[colors.firstIndex(of: last)! + 1]
-        }
-        currentOpacity = 1.0
-        lastOpacity = 0.0
-        currentOffset = .init(width: -20, height: -20)
-        nextOffset = .zero
-        lastOffset = .init(width: 20, height: 20)
-        withAnimation(.easeInOut(duration: duration)) {
-            lastOpacity = 1.0
+            nextPage = colors[colors.firstIndex(of: nextPage)! + 1]
         }
     }
 }
@@ -100,6 +119,6 @@ struct TripleStackGallery: View {
 struct SwiftUIView_Previews: PreviewProvider {
     static var previews: some View {
         TripleStackGallery([.blue, .green, .red, .purple, .orange, .yellow])
-            .frame(width: 200, height: 200)
+            .frame(width: 300, height: 300)
     }
 }
