@@ -7,27 +7,27 @@
 
 import SwiftUI
 
-struct TripleStackGallery: View {
+public struct TripleStackGallery: View {
     // MARK: - Offsets
-    @State var currentOffset: CGSize = .init(width: -20, height: -20)
-    @State var nextOffset: CGSize = .zero
-    @State var lastOffset: CGSize = .init(width: 20, height: 20)
+    @State private var currentOffset: CGSize = .init(width: -20, height: -20)
+    @State private var nextOffset: CGSize = .zero
+    @State private var lastOffset: CGSize = .init(width: 20, height: 20)
 
     // MARK: - Opacities
-    @State var currentOpacity: Double = 1.0
+    @State private var currentOpacity: Double = 1.0
 
     // MARK: Displayed views
-    @State var index: Int = 0
+    @State private var index: Int = 0
     
-    var colors: [Color]
+    public var colors: [Color]
     
-    let duration: Double = 0.25
+    private let duration: Double = 0.25
     
-    init(_ colors: [Color]) {
+    public init(_ colors: [Color]) {
         self.colors = colors
     }
     
-    var body: some View {
+    public var body: some View {
         VStack {
             if let current = currentColor {
                 ZStack {
@@ -52,19 +52,7 @@ struct TripleStackGallery: View {
                         })
                                     .onEnded({ endValue in
                             if shouldProgress(endValue.translation.width) {
-                                withAnimation(.easeInOut(duration: duration)) {
-                                    self.currentOpacity = 0.0
-                                    currentOffset = .init(width: -20, height: -20)
-                                    nextOffset = .init(width: -20, height: -20)
-                                    lastOffset = .zero
-                                }
-                                DispatchQueue.main.asyncAfter(deadline: .now() + duration) {
-                                    increaseIndex()
-                                    currentOpacity = 1.0
-                                    currentOffset = .init(width: -20, height: -20)
-                                    nextOffset = .zero
-                                    lastOffset = .init(width: 20, height: 20)
-                                }
+                                animateTransition()
                             } else {
                                 withAnimation(.easeInOut) {
                                     currentOffset = .init(width: -20, height: -20)
@@ -78,7 +66,33 @@ struct TripleStackGallery: View {
         }
     }
     
-    func increaseIndex() {
+    //MARK: - Gesture methods
+    private func isValidGesture(width: CGFloat) -> Bool {
+        return width != 0 && width < 80 && width > -80
+    }
+    
+    private func shouldProgress(_ width: CGFloat) -> Bool {
+        return width > 60 || width < -60
+    }
+    
+    private func animateTransition() {
+        withAnimation(.easeInOut(duration: duration)) {
+            self.currentOpacity = 0.0
+            currentOffset = .init(width: -20, height: -20)
+            nextOffset = .init(width: -20, height: -20)
+            lastOffset = .zero
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + duration) {
+            increaseIndex()
+            currentOpacity = 1.0
+            currentOffset = .init(width: -20, height: -20)
+            nextOffset = .zero
+            lastOffset = .init(width: 20, height: 20)
+        }
+    }
+    
+    // MARK: - Index manipulation methods
+    private func increaseIndex() {
         guard colors.count > 0 else { return }
         if index == colors.count - 1 {
             index = 0
@@ -87,12 +101,12 @@ struct TripleStackGallery: View {
         }
     }
     
-    var currentColor: Color? {
+    private var currentColor: Color? {
         guard colors.indices.contains(index) else { return nil }
         return colors[index]
     }
     
-    func color(byAdding index: Int) -> Color {
+    private func color(byAdding index: Int) -> Color {
         let colorIndex = self.index + index
         guard colors.indices.contains(colorIndex) else {
             return colors[actual(index: colorIndex)]
@@ -100,20 +114,12 @@ struct TripleStackGallery: View {
         return colors[colorIndex]
     }
     
-    func actual(index overflowIndex: Int) -> Int {
+    private func actual(index overflowIndex: Int) -> Int {
         let actualIndex = overflowIndex - colors.count
         guard colors.indices.contains(actualIndex) else {
             return actual(index: actualIndex)
         }
         return actualIndex
-    }
-    
-    func isValidGesture(width: CGFloat) -> Bool {
-        return width != 0 && width < 80 && width > -80
-    }
-    
-    func shouldProgress(_ width: CGFloat) -> Bool {
-        return width > 60 || width < -60
     }
 }
 
