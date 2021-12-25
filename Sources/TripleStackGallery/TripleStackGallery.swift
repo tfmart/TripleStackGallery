@@ -15,35 +15,37 @@ public struct TripleStackGallery: View {
 
     // MARK: - Opacities
     @State private var currentOpacity: Double = 1.0
-
-    // MARK: Displayed views
-    @State private var index: Int = 0
     
-    public var colors: [Color]
+    @ObservedObject public var viewModel: TripleStackViewModel
     
-    private let duration: Double = 0.25
-    
-    public init(_ colors: [Color]) {
-        self.colors = colors
+    public init(viewModel: TripleStackViewModel) {
+        self.viewModel = viewModel
     }
     
     public var body: some View {
         VStack {
-            if let current = currentColor {
+            if let current = viewModel.currentImage {
                 ZStack {
-                    color(byAdding: 3)
+                    Image(uiImage: viewModel.image(byAdding: 3))
+                        .resizable()
                         .aspectRatio(1.0, contentMode: .fill)
                         .offset(.init(width: 20, height: 20))
-                    color(byAdding: 2)
+                    Image(uiImage: viewModel.image(byAdding: 2))
+                        .resizable()
                         .aspectRatio(1.0, contentMode: .fill)
                         .offset(lastOffset)
-                    color(byAdding: 1)
+                    Image(uiImage: viewModel.image(byAdding: 1))
+                        .resizable()
                         .aspectRatio(1.0, contentMode: .fill)
                         .offset(nextOffset)
-                    current
+                    Image(uiImage: current)
+                        .resizable()
                         .aspectRatio(1.0, contentMode: .fill)
                         .offset(currentOffset)
                         .opacity(currentOpacity)
+                        .onTapGesture {
+                            viewModel.didTap()
+                        }
                         .gesture(DragGesture()
                                     .onChanged({ dragValue in
                             if isValidGesture(width: dragValue.translation.width) {
@@ -76,56 +78,43 @@ public struct TripleStackGallery: View {
     }
     
     private func animateTransition() {
-        withAnimation(.easeInOut(duration: duration)) {
+        withAnimation(.easeInOut(duration: viewModel.duration)) {
             self.currentOpacity = 0.0
             currentOffset = .init(width: -20, height: -20)
             nextOffset = .init(width: -20, height: -20)
             lastOffset = .zero
         }
-        DispatchQueue.main.asyncAfter(deadline: .now() + duration) {
-            increaseIndex()
+        DispatchQueue.main.asyncAfter(deadline: .now() + viewModel.duration) {
+            viewModel.increaseIndex()
             currentOpacity = 1.0
             currentOffset = .init(width: -20, height: -20)
             nextOffset = .zero
             lastOffset = .init(width: 20, height: 20)
         }
     }
-    
-    // MARK: - Index manipulation methods
-    private func increaseIndex() {
-        guard colors.count > 0 else { return }
-        if index == colors.count - 1 {
-            index = 0
-        } else {
-            index += 1
-        }
-    }
-    
-    private var currentColor: Color? {
-        guard colors.indices.contains(index) else { return nil }
-        return colors[index]
-    }
-    
-    private func color(byAdding index: Int) -> Color {
-        let colorIndex = self.index + index
-        guard colors.indices.contains(colorIndex) else {
-            return colors[actual(index: colorIndex)]
-        }
-        return colors[colorIndex]
-    }
-    
-    private func actual(index overflowIndex: Int) -> Int {
-        let actualIndex = overflowIndex - colors.count
-        guard colors.indices.contains(actualIndex) else {
-            return actual(index: actualIndex)
-        }
-        return actualIndex
-    }
 }
 
 struct SwiftUIView_Previews: PreviewProvider {
+    static func from(color: UIColor) -> UIImage {
+            let rect = CGRect(x: 0, y: 0, width: 1, height: 1)
+            UIGraphicsBeginImageContext(rect.size)
+            let context = UIGraphicsGetCurrentContext()
+            context!.setFillColor(color.cgColor)
+            context!.fill(rect)
+            let img = UIGraphicsGetImageFromCurrentImageContext()
+            UIGraphicsEndImageContext()
+            return img!
+        }
+    
     static var previews: some View {
-        TripleStackGallery([.blue, .green, .red, .purple, .orange, .yellow])
+        TripleStackGallery(viewModel: .init(images: [
+            from(color: .blue),
+            from(color: .green),
+            from(color: .red),
+            from(color: .purple),
+            from(color: .orange),
+            from(color: .yellow)
+        ]))
             .frame(width: 300, height: 300)
     }
 }
