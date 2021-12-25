@@ -8,6 +8,7 @@
 import Combine
 import UIKit
 
+/// Class that holds the set of images to be displayed by the gallery and it's rules to control the display of such images
 public class TripleStackViewModel: ObservableObject {
     /// The index of the image that is currently beign displayed at the front of the gallery
     @Published internal var index: Int
@@ -15,9 +16,14 @@ public class TripleStackViewModel: ObservableObject {
     @Published public var images: [UIImage]
     /// The duration of the animations that are executed when the gallery is interacted with
     public var duration: Double
-    
+    /// The object that acts as the delegate for the `TripleStackViewModel`
     public weak var delegate: TripleStackGalleryDelegate?
     
+    /// Initializes `self` with the images to be displayed by the gallery, the starting index and the view's animations duration time
+    /// - Parameters:
+    ///   - images: An array of `UIImage` that will be displayed by the gallery
+    ///   - index: An optional parameter which indicates the starting index of the gallery. Default value is 0
+    ///   - animationDuration: An optional parameter which indicates the duration time of the gallery view animations. Default value is 0.25
     public init(images: [UIImage], startAt index: Int = 0, animationDuration: Double = 0.25) {
         self.images = images
         self.index = index

@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+/// Gallery component that displays a set of images in a stack of images
 public struct TripleStackGallery: View {
     // MARK: - Offsets
     @State private var currentOffset: CGSize = .init(width: -20, height: -20)
@@ -16,8 +17,11 @@ public struct TripleStackGallery: View {
     // MARK: - Opacities
     @State private var currentOpacity: Double = 1.0
     
+    /// Object that holds the content to be displayed by the gallery
     @ObservedObject public var viewModel: TripleStackViewModel
     
+    /// Instantiates `self` with the content and rules set from `viewModel`
+    /// - Parameter viewModel: Holds the content to be displayed by the gallery component
     public init(viewModel: TripleStackViewModel) {
         self.viewModel = viewModel
     }
