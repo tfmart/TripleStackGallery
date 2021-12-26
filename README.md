@@ -4,9 +4,7 @@ TripleStackGallery is a image gallery component, which displays a set of images 
 
 ![TripleStackGalleryDemo](/Images/demo.gif)
 
-This component is a rebuild of image gallery present in the Adidas' store app, built entirely with SwiftUI:
-
-![Adidas Demo](/Images/adidas.gif)
+This component is a rebuild of the image gallery present in the Adidas' store app, but built entirely with SwiftUI:
 
 ## Installation
 
