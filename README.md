@@ -17,19 +17,38 @@ This package can be added to a project thorugh Swift Package Manager. To add it 
 You can also add it by declaring this package as a dependency on your project `Package.swift` file, inside the `dependencies` property of your Package:
 ```swift
 dependencies: [
-    .package(name: "SnapshotTesting", url: "https://github.com/pointfreeco/swift-snapshot-testing.git", from: "1.9.0"),
+    .package(name: "TripleStackGallery", url: "https://github.com/tfmart/TripleStackGallery.git", from: "1.0.0"),
 ]
 ```
 
-## Usage
+## How to Use
 
-First, create an instance of `TripleStackViewModel` by passing the array of images that will be displayed in the gallery:
+First, create an instance of `TripleStackViewModel` by passing the array of images that will be displayed in the gallery. This class will be the source of the images to the component,
 ```swift
 let images: [UIImage] = [...]
 
 let viewModel = TripleStackViewModel(images: images)
 ```
 
+Use the instance of view model you just created on the `TripleStackGallery` component initializer
+
+```swift
+let gallery = TripleStackGallery(viewModel: viewModel)
+```
+
+With the component ready, you should be all set!
+
+### Cusotmizations
+
+You can change some of the presentation rules with the `TripleStackViewModel` class. On it's initializer there are two optional parameters: `index` and `animationDuration`
+
+`index` let's you set the starting index of the gallery when component first appears on screen. Be aware though that if the value set is out of bounds of the `images` arary, a error message will be shown in place of the gallery component
+
+`animationDuration` let's you configure the amount of time the animations displayed when transitioning to a new image takes. The default value is 0.25 second
+
+```
+let viewModel = TripleStackViewModel(images: images, index: 2, animationDuration: 0.75)
+```
 
 ## Contribution
 
