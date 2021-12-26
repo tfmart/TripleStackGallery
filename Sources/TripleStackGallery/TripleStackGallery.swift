@@ -30,21 +30,13 @@ public struct TripleStackGallery: View {
         VStack {
             if let current = viewModel.currentImage {
                 ZStack {
-                    Image(uiImage: viewModel.image(byAdding: 3))
-                        .resizable()
-                        .aspectRatio(1.0, contentMode: .fill)
+                    squareImage(with: viewModel.image(byAdding: 3))
                         .offset(.init(width: 20, height: 20))
-                    Image(uiImage: viewModel.image(byAdding: 2))
-                        .resizable()
-                        .aspectRatio(1.0, contentMode: .fill)
+                    squareImage(with: viewModel.image(byAdding: 2))
                         .offset(lastOffset)
-                    Image(uiImage: viewModel.image(byAdding: 1))
-                        .resizable()
-                        .aspectRatio(1.0, contentMode: .fill)
+                    squareImage(with: viewModel.image(byAdding: 1))
                         .offset(nextOffset)
-                    Image(uiImage: current)
-                        .resizable()
-                        .aspectRatio(1.0, contentMode: .fill)
+                    squareImage(with: current)
                         .offset(currentOffset)
                         .opacity(currentOpacity)
                         .onTapGesture {
@@ -70,6 +62,15 @@ public struct TripleStackGallery: View {
                 Text("No data to display")
             }
         }
+    }
+    
+    private func squareImage(with image: UIImage) -> some View {
+        Color.clear
+            .aspectRatio(1, contentMode: .fit)
+            .background(Image(uiImage: image)
+                            .resizable()
+                            .aspectRatio(contentMode: .fill))
+            .clipped()
     }
     
     //MARK: - Gesture methods
