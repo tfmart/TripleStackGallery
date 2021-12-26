@@ -25,11 +25,10 @@ class TripleStackViewModelTests: XCTestCase {
         XCTAssertEqual(sut.index, 0)
     }
     
-    func testCurrentImage() {
-        XCTAssertNotNil(sut.currentImage)
-        XCTAssertEqual(sut.currentImage, sut.images.first)
+    func testIsValidIndex() {
+        XCTAssertTrue(sut.isValidIndex)
         sut.index = 20
-        XCTAssertNil(sut.currentImage)
+        XCTAssertFalse(sut.isValidIndex)
     }
     
     func testImageByAdding() {

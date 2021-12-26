@@ -30,10 +30,9 @@ public class TripleStackViewModel: ObservableObject {
         self.duration = animationDuration
     }
     
-    /// Returns an optional UIImage from the `images` array according to the current index. If the index is out of bunds, it will return `nil`
-    public var currentImage: UIImage? {
-        guard images.indices.contains(index) else { return nil }
-        return images[index]
+    /// Boolean indicating whether the current value of index is not out of bounds of the `images` array
+    public var isValidIndex: Bool {
+        return images.indices.contains(index)
     }
     
     /// Increase the current index by one. If the new value would be out of bounds of the `images` array, it will point to the index of the first image instead
