@@ -28,49 +28,68 @@ public struct TripleStackGallery: View {
     
     public var body: some View {
         VStack {
-            if let current = viewModel.currentImage {
-                ZStack {
-                    squareImage(with: viewModel.image(byAdding: 3))
-                        .offset(.init(width: 20, height: 20))
-                    squareImage(with: viewModel.image(byAdding: 2))
-                        .offset(lastOffset)
-                    squareImage(with: viewModel.image(byAdding: 1))
-                        .offset(nextOffset)
-                    squareImage(with: current)
-                        .offset(currentOffset)
-                        .opacity(currentOpacity)
-                        .onTapGesture {
-                            viewModel.didTap()
-                        }
-                        .gesture(DragGesture()
-                                    .onChanged({ dragValue in
-                            if isValidGesture(width: dragValue.translation.width) {
-                                currentOffset = .init(width: dragValue.translation.width, height: -20)
-                            }
-                        })
-                                    .onEnded({ endValue in
-                            if shouldProgress(endValue.translation.width) {
-                                animateTransition()
-                            } else {
-                                withAnimation(.easeInOut) {
-                                    currentOffset = .init(width: -20, height: -20)
-                                }
-                            }
-                        }))
-                }.padding(20)
+            if viewModel.isValidIndex {
+                gallery
             } else {
                 Text("No data to display")
             }
         }
     }
     
-    private func squareImage(with image: UIImage) -> some View {
+    var gallery: some View {
+        ZStack {
+            ForEach((0...3).reversed(), id: \.self) {
+                if $0 == 0 {
+                    imageWithGesture(image: viewModel.image(byAdding: $0), index: $0)
+                } else {
+                    squareImage(with: viewModel.image(byAdding: $0),
+                                index: $0)
+                }
+            }
+        }.padding(20)
+    }
+    
+    func offset(for index: Int) -> CGSize {
+        switch index {
+        case 3: return .init(width: 20, height: 20)
+        case 2: return lastOffset
+        case 1: return nextOffset
+        case 0: return currentOffset
+        default: return .zero
+        }
+    }
+    
+    private func squareImage(with image: UIImage, index: Int) -> some View {
         Color.clear
             .aspectRatio(1, contentMode: .fit)
             .background(Image(uiImage: image)
                             .resizable()
                             .aspectRatio(contentMode: .fill))
             .clipped()
+            .offset(offset(for: index))
+    }
+    
+    private func imageWithGesture(image: UIImage, index: Int) -> some View {
+        squareImage(with: image, index: index)
+            .opacity(currentOpacity)
+            .onTapGesture {
+                viewModel.didTap()
+            }
+            .gesture(DragGesture()
+                        .onChanged({ dragValue in
+                if isValidGesture(width: dragValue.translation.width) {
+                    currentOffset = .init(width: dragValue.translation.width, height: -20)
+                }
+            })
+                        .onEnded({ endValue in
+                if shouldProgress(endValue.translation.width) {
+                    animateTransition()
+                } else {
+                    withAnimation(.easeInOut) {
+                        currentOffset = .init(width: -20, height: -20)
+                    }
+                }
+            }))
     }
     
     //MARK: - Gesture methods
